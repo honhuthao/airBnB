@@ -67,3 +67,14 @@ export const deleteRoomThunk = createAsyncThunk(
         }
     }
 )
+
+export const getRoomAllThunk = createAsyncThunk(
+    'quanLyPhong/getRoomAllThunk', async (_, { rejectWithValue }) => {
+        try {
+            const data = await quanLyPhongServices.getRoomAll()
+            return data.data.content
+        } catch (error) {
+            return rejectWithValue(error)
+        }
+    }
+)

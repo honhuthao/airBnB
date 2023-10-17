@@ -1,15 +1,32 @@
-import { Carousel } from "components/ui";
+import { Card,Skeleton } from "components/ui";
+import { PATH } from "constant";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "store";
-import { getLocationPaginationThunk } from "store/quanLyViTri/thunk";
+import { getLocationPaginationThunk,getLocationByIdThunk } from "store/quanLyViTri/thunk";
+import {getRoomAllThunk} from "store/quanLyPhong/thunk"
 import styled from "styled-components";
+import { generatePath, useNavigate, useParams } from "react-router-dom";
 
 export const HomeTemplate = () => {
+  const navigate = useNavigate()
   const dispatch = useAppDispatch();
+  const params = useParams();
+  const { maViTri } = params;
   const { LocationPagination } = useSelector(
     (state: RootState) => state.quanLyViTri
   );
+
+  const { LocationById } = useSelector(
+    (state: RootState) => state.quanLyViTri
+);
+
+  const { RoomsAllList, isFetchingRoom } = useSelector(
+    (state: RootState) => state.quanLyPhong
+  );
+  useEffect(() => {
+    dispatch(getLocationByIdThunk(Number(maViTri)))
+}, [maViTri]);
 
   useEffect(() => {
     dispatch(
@@ -17,25 +34,56 @@ export const HomeTemplate = () => {
     );
     document.title = "Nhà nghỉ dưỡng & Căn hộ cao cấp cho thuê - Airbnb";
   }, []);
+
+  useEffect(() => {
+    dispatch(getRoomAllThunk());
+  }, [dispatch]);
+
+  if (isFetchingRoom) {
+    return (
+      <div className="grid grid-cols-4 gap-10 max-w-[1400px] mx-auto pt-24">
+        {[...Array(20)].map((_, index) => {
+          return (
+            <Card key={index} className="!w-[320px]">
+              <Skeleton.Image active className="!w-full !h-[250px]" />
+              <Skeleton.Input active className="!w-full mt-2" />
+              <Skeleton.Input active className="!w-full mt-2" />
+            </Card>
+          );
+        })}
+      </div>
+    );
+  }
   return (
     <Home>
-      {/* Carousel */}
-      <div className="airbnb_carousel">
-        <div className="container">
-          <div className="carousel_box">
-            <Carousel>
-              <div className="carousel_item">
-                <img
-                  className="carousel_img"
-                  src="./images/airbnb_carousel.jpg"
-                  alt="airbnb_carousel"
-                />
-              </div>
-            </Carousel>
-          </div>
-          <div className="carousel_caption">
-            <p className="font-mono title">Nhờ có Host, mọi điều đều có thể</p>
-          </div>
+      {/* Card */}
+      <div className="airbnb_card">  
+        <div className="grid grid-cols-4 gap-40 mt-30">
+            {RoomsAllList?.map((phong,id) => {
+              const path = generatePath(PATH.roomdetails, { id: phong.id })
+                if(id < 20)
+                { 
+                  return (
+                    <div onClick={() => { navigate(
+                      {
+                        pathname: path,
+                        search: `?maViTri=${phong.maViTri}`
+                      }
+                    )
+                }}>
+                    <Card
+                      key={phong.id}
+                      hoverable
+                      style={{ width: 300,height:250 }}
+                      cover={<img alt="example" src={phong.hinhAnh} />}
+                  >
+                      <Card.Meta
+                          title={<div>{phong.tenPhong}<br />${phong.giaTien}/Đêm</div>}
+                      />
+                  </Card>
+                  </div>              
+              )}
+            })}
         </div>
       </div>
       {/* Location */}

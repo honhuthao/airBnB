@@ -1,9 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit"
-import { getRoomByIdThunk, getRoomsByLocationThunk, getRoomsThunk } from "./thunk"
-import { RoomsByLocation } from "types"
+import { getRoomByIdThunk, getRoomsByLocationThunk, getRoomsThunk,getRoomAllThunk } from "./thunk"
+import { RoomsByLocation,Rooms } from "types"
 
 type quanLyPhongInitialState = {
     RoomsByLocationList?: RoomsByLocation[]
+    RoomsAllList?:Rooms[]
     Room?: RoomsByLocation
     isFetchingRoom: boolean
     currentRoom?: RoomsByLocation
@@ -11,6 +12,7 @@ type quanLyPhongInitialState = {
 
 const initialState: quanLyPhongInitialState = {
     RoomsByLocationList: [],
+    RoomsAllList:[],
     isFetchingRoom: false
 }
 
@@ -41,6 +43,10 @@ const quanLyPhongSlice = createSlice({
             .addCase(getRoomByIdThunk.fulfilled, (state, { payload }) => {
                 state.Room = payload
                 localStorage.setItem("currentRoomIdView", JSON.stringify(payload.id))
+            })
+            .addCase(getRoomAllThunk.fulfilled, (state, {payload})=> {
+                state.RoomsAllList = payload
+                state.isFetchingRoom = false
             })
     },
 })
